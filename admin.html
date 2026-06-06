@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Kolkata Doorstep Wash</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Supabase JS Client library CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 antialiased font-sans pb-12">
+
+  <!-- Dashboard Navbar -->
+  <nav class="bg-slate-800 border-b border-slate-700 py-4 px-6 sticky top-0 z-50 flex justify-between items-center shadow-lg">
+    <div class="flex items-center gap-3">
+      <div class="bg-blue-600 p-2 rounded-xl text-white font-bold text-sm tracking-wider">KDW</div>
+      <h1 class="text-lg font-bold tracking-tight">Wash Ops Command Center</h1>
+    </div>
+    <button onclick="fetchBookings()" class="bg-slate-700 hover:bg-slate-600 active:scale-95 text-xs font-semibold px-3 py-2 rounded-lg transition border border-slate-600 cursor-pointer">
+      🔄 Refresh Data
+    </button>
+  </nav>
+
+  <!-- Metrics Container -->
+  <main class="max-w-6xl mx-auto px-4 mt-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      
+      <!-- Total Earnings Card -->
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-sm">
+        <span class="block text-xs font-medium uppercase tracking-wider text-slate-400">Total Revenue Generated</span>
+        <span class="text-3xl font-black text-emerald-400 mt-2 block" id="statRevenue">₹0</span>
+      </div>
+
+      <!-- Total Orders Card -->
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-sm">
+        <span class="block text-xs font-medium uppercase tracking-wider text-slate-400">Total Bookings Logs</span>
+        <span class="text-3xl font-black text-blue-400 mt-2 block" id="statTotalOrders">0</span>
+      </div>
+
+      <!-- Active Pending Jobs Card -->
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-sm">
+        <span class="block text-xs font-medium uppercase tracking-wider text-slate-400">Pending Payments/Washes</span>
+        <span class="text-3xl font-black text-amber-400 mt-2 block" id="statPending">0</span>
+      </div>
+
+    </div>
+
+    <!-- Live Orders Ledger Table Card -->
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-700 bg-slate-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <h2 class="text-md font-bold tracking-wide text-slate-200">Incoming Orders Queue</h2>
+        <span class="text-[11px] bg-slate-900 text-slate-400 font-mono px-2 py-1 rounded border border-slate-700">Live Sync Enabled</span>
+      </div>
+
+      <!-- Responsive Table Grid Wrapper -->
+      <div class="overflow-x-auto w-full">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700">
+              <th class="p-4">Customer</th>
+              <th class="p-4">Phone</th>
+              <th class="p-4">Vehicle & Package</th>
+              <th class="p-4">Schedule Slot</th>
+              <th class="p-4">Kolkata Address</th>
+              <th class="p-4">Amount</th>
+              <th class="p-4 text-center">Status Action</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsTableBody" class="divide-y divide-slate-700/50">
+            <!-- Dynamic data drops here via script -->
+            <tr>
+              <td colspan="7" class="p-8 text-center text-slate-500 animate-pulse">Connecting to Supabase grid ledger...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Initialize Supabase Connection using your matching credentials
+    const SUPABASE_URL = "https://vxaxdevnsbbjtryyered.supabase.co"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4YXhkZXZuc2JianRyeXllcmVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjU0NTYsImV4cCI6MjA5NjM0MTQ1Nn0.t138jEfNLZa18EwjfMpiLis3pKDwF09OuKp4m-9ALQ0";
+    
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function fetchBookings() {
+      const tableBody = document.getElementById('bookingsTableBody');
+      
+      try {
+        // Pull order matrix rows sorted newest first
+        const { data: bookings, error } = await _supabase
+          .from('bookings')
+          .select('*')
+          .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        // Reset metrics counters
+        let totalRevenue = 0;
+        let pendingCount = 0;
+        
+        if (!bookings || bookings.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">No bookings logged yet in your business database.</td></tr>`;
+          updateMetrics(0, 0, 0);
+          return;
+        }
+
+        tableBody.innerHTML = '';
+
+        bookings.forEach(row => {
+          // Process statistics calculations
+          const amt = parseInt(row.final_amount_inr) || 0;
+          totalRevenue += amt;
+          
+          if (row.payment_status === 'Pending') {
+            pendingCount++;
+          }
+
+          // Format status visual styling pills
+          const statusStyle = row.payment_status === 'Paid' 
+            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+            : 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+
+          const rowHtml = `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="p-4 font-semibold text-slate-200">${row.customer_name}</td>
+              <td class="p-4 font-mono text-xs text-slate-300">${row.phone_number}</td>
+              <td class="p-4">
+                <span class="block text-slate-200 capitalize">${row.vehicle_type}</span>
+                <span class="block text-slate-400 text-xs">${row.service_package === 'deep' ? 'Premium Deep Clean' : 'Eco Exterior'}</span>
+              </td>
+              <td class="p-4 text-xs">
+                <span class="block text-slate-300 font-medium">${row.booking_date}</span>
+                <span class="block text-slate-400 mt-0.5">${row.time_slot}</span>
+              </td>
+              <td class="p-4 text-xs text-slate-400 max-w-xs truncate">${row.address}</td>
+              <td class="p-4 font-bold text-emerald-400 font-mono">₹${amt}</td>
+              <td class="p-4 text-center">
+                <button onclick="toggleStatus(${row.id}, '${row.payment_status}')" 
+                        class="px-2.5 py-1 text-xs font-semibold rounded-full border border-solid ${statusStyle} transition hover:scale-105 active:scale-95 cursor-pointer">
+                  ${row.payment_status}
+                </button>
+              </td>
+            </tr>
+          `;
+          tableBody.insertAdjacentHTML('beforeend', rowHtml);
+        });
+
+        updateMetrics(totalRevenue, bookings.length, pendingCount);
+
+      } catch (err) {
+        console.error("Dashboard engine query error:", err.message);
+        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-rose-400 font-medium">Error loading data. Check RLS or connection configuration!</td></tr>`;
+      }
+    }
+
+    function updateMetrics(revenue, total, pending) {
+      document.getElementById('statRevenue').textContent = `₹${revenue}`;
+      document.getElementById('statTotalOrders').textContent = total;
+      document.getElementById('statPending').textContent = pending;
+    }
+
+    async function toggleStatus(id, currentStatus) {
+      const nextStatus = currentStatus === 'Pending' ? 'Paid' : 'Pending';
+      try {
+        const { error } = await _supabase
+          .from('bookings')
+          .update({ payment_status: nextStatus })
+          .eq('id', id);
+
+        if (error) throw error;
+        
+        // Re-render fresh layout records
+        fetchBookings();
+      } catch(err) {
+        alert("Could not update row: " + err.message);
+      }
+    }
+
+    // Trigger loader immediately on window boot
+    window.addEventListener('DOMContentLoaded', fetchBookings);
+  </script>
+</body>
+</html>
