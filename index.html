@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kolkata Doorstep Auto Wash</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Supabase JS Client library CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased font-sans pb-12">
+
+  <!-- Header Banner -->
+  <header class="bg-blue-600 text-white py-6 px-4 text-center rounded-b-3xl shadow-md">
+    <h1 class="text-2xl font-bold tracking-tight">Kolkata Doorstep Wash</h1>
+    <p class="text-sm opacity-90 mt-1">Professional Car & Bike Cleaning at Your Home</p>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-md mx-auto px-4 mt-6">
+    
+    <!-- Info Note -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-lg mb-6 text-xs text-blue-800">
+      <strong>Kolkata Service Note:</strong> Our cleaning pros bring their own portable water pressure units and power extensions.
+    </div>
+
+    <!-- Booking Form Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+      <h2 class="text-lg font-semibold border-b border-slate-100 pb-3 mb-4">Book Your Wash</h2>
+      
+      <form id="bookingForm" class="space-y-4">
+        
+        <!-- Customer Details Group -->
+        <div>
+          <label class="block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Full Name</label>
+          <input type="text" id="custName" required placeholder="e.g., Sourav Das" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Phone Number</label>
+          <input type="tel" id="custPhone" required placeholder="10-digit mobile number" pattern="[0-9]{10}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+        </div>
+
+        <!-- Vehicle Type Dropdown -->
+        <div>
+          <label class="block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Vehicle Category</label>
+          <select id="vehicleType" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+            <option value="" disabled selected>Select vehicle type...</option>
+            <option value="bike">Two-Wheeler (Bike/Scooter)</option>
+            <option value="hatchback">Hatchback (Swift, i10, WagonR)</option>
+            <option value="sedan">Sedan (City, Verna, Dzire)</option>
+            <option value="csuv">Compact SUV (Creta, Brezza)</option>
+            <option value="psuv">Premium SUV / Luxury (Fortuner, Audi)</option>
+            <option value="supercar">Supercar / Exotic (Porsche, Ferrari)</option>
+          </select>
+        </div>
+
+        <!-- Package Type Dropdown -->
+        <div>
+          <label class="block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Service Package</label>
+          <select id="packageType" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+            <option value="basic" selected>Basic Exterior Eco Wash</option>
+            <option value="deep">Premium Deep Cleaning (Int + Ext)</option>
+          </select>
+        </div>
+
+        <!-- Date & Time Slots -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Select Date</label>
+            <input type="date" id="bookingDate" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+          </div>
+          <div>
+            <label class="block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Preferred Slot</label>
+            <select id="timeSlot" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+              <option value="08:00 - 10:00">8 AM - 10 AM</option>
+              <option value="10:00 - 12:00">10 AM - 12 PM</option>
+              <option value="12:00 - 14:00">12 PM - 2 PM</option>
+              <option value="14:00 - 16:00">2 PM - 4 PM</option>
+              <option value="16:00 - 18:00">4 PM - 6 PM</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Address Textarea -->
+        <div>
+          <label class="block text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Service Address in Kolkata</label>
+          <textarea id="custAddress" rows="2" required placeholder="Flat, Street, Area Pincode" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></textarea>
+        </div>
+
+        <!-- Live Cost Calculator Card -->
+        <div class="bg-slate-900 text-white rounded-xl p-4 flex justify-between items-center mt-6">
+          <div>
+            <span class="block text-[10px] uppercase tracking-widest text-slate-400">Total Price (INR Only)</span>
+            <span class="text-2xl font-black text-emerald-400" id="priceDisplay">₹0</span>
+          </div>
+          <div class="text-right text-xs text-slate-400">
+            <p>Secure Checkout</p>
+            <p class="text-[10px]">Online/Card/UPI</p>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="w-full bg-blue-600 active:bg-blue-700 text-white py-3 px-4 rounded-xl font-medium shadow-md transition transform active:scale-98 text-sm cursor-pointer">
+          Proceed to Secure Payment
+        </button>
+
+      </form>
+    </div>
+  </main>
+
+  <!-- App Processing Script logic -->
+  <script>
+    // 1. Kolkata Pricing Engine Matrix
+    const pricingMatrix = {
+      bike: { basic: 149, deep: 299 },
+      hatchback: { basic: 299, deep: 549 },
+      sedan: { basic: 399, deep: 749 },
+      csuv: { basic: 449, deep: 899 },
+      psuv: { basic: 599, deep: 1199 },
+      supercar: { basic: 999, deep: 2499 }
+    };
+
+    const vehicleSelect = document.getElementById('vehicleType');
+    const packageSelect = document.getElementById('packageType');
+    const priceDisplay = document.getElementById('priceDisplay');
+
+    function calculatePrice() {
+      const vehicle = vehicleSelect.value;
+      const packageType = packageSelect.value;
+      
+      if (vehicle && pricingMatrix[vehicle]) {
+        const calculatedPrice = pricingMatrix[vehicle][packageType];
+        priceDisplay.textContent = `₹${calculatedPrice}`;
+        return calculatedPrice;
+      }
+      priceDisplay.textContent = '₹0';
+      return 0;
+    }
+
+    vehicleSelect.addEventListener('change', calculatePrice);
+    packageSelect.addEventListener('change', calculatePrice);
+
+    // Set minimum date selector option to 'Today'
+    document.getElementById('bookingDate').min = new Date().toISOString().split('T')[0];
+
+    // 2. Initialize Supabase Connection (Your Actual Keys Added Below!)
+    const SUPABASE_URL = "https://vxaxdevnsbbjtryyered.supabase.co"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4YXhkZXZuc2JianRyeXllcmVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjU0NTYsImV4cCI6MjA5NjM0MTQ1Nn0.t138jEfNLZa18EwjfMpiLis3pKDwF09OuKp4m-9ALQ0";
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 3. Form Submission Handling
+    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const currentFinalPrice = calculatePrice();
+      if(currentFinalPrice === 0) {
+        alert("Please choose a valid Vehicle Category first.");
+        return;
+      }
+
+      // Collect inputs
+      const bookingPayload = {
+        customer_name: document.getElementById('custName').value,
+        phone_number: document.getElementById('custPhone').value,
+        vehicle_type: vehicleSelect.value,
+        service_package: packageSelect.value,
+        booking_date: document.getElementById('bookingDate').value,
+        time_slot: document.getElementById('timeSlot').value,
+        address: document.getElementById('custAddress').value,
+        final_amount_inr: currentFinalPrice,
+        payment_status: 'Pending'
+      };
+
+      try {
+        // Send payload directly to your Supabase table
+        const { data, error } = await supabaseClient
+          .from('bookings')
+          .insert([bookingPayload]);
+
+        if (error) throw error;
+
+        alert(`Booking Saved Successfully! Forwarding to INR Secure Payment Gateway for ₹${currentFinalPrice}.`);
+        
+        document.getElementById('bookingForm').reset();
+        priceDisplay.textContent = '₹0';
+
+      } catch (err) {
+        console.error("Error saving booking details:", err.message);
+        alert("Could not save booking. Make sure you have created the table inside your Supabase SQL editor!");
+      }
+    });
+  </script>
+</body>
+</html>
